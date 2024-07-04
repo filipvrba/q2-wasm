@@ -28,77 +28,68 @@ Module.expectedDataFileDownloads++;
         var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
         var REMOTE_PACKAGE_SIZE = metadata["remote_package_size"];
         function fetchRemotePackage(packageName, packageSize, callback, errback) {
-            // Prostředí Node.js
+            console.log(packageName, packageSize);
+
             if (typeof process === "object" && typeof process.versions === "object" && typeof process.versions.node === "string") {
-                // Pokud jde o Node.js, využijeme downloadFile na serverové straně
-                downloadFile(packageName, function(packageData) {
-                    callback(packageData);
-                }, function(err) {
-                    errback(err);
+                require("fs").readFile(packageName, function(err, contents) {
+                    if (err) {
+                        errback(err)
+                    } else {
+                        callback(contents.buffer)
+                    }
                 });
-                return;
+                return
             }
-        
-            // Webový prohlížeč
-            var xhr = new XMLHttpRequest();
+            var xhr = new XMLHttpRequest;
             xhr.open("GET", packageName, true);
             xhr.responseType = "arraybuffer";
-        
             xhr.onprogress = function(event) {
                 var url = packageName;
                 var size = packageSize;
-        
-                if (event.total) {
+                if (event.total)
                     size = event.total;
-                }
-        
                 if (event.loaded) {
                     if (!xhr.addedTotal) {
                         xhr.addedTotal = true;
-                        if (!Module.dataFileDownloads) {
+                        if (!Module.dataFileDownloads)
                             Module.dataFileDownloads = {};
-                        }
                         Module.dataFileDownloads[url] = {
                             loaded: event.loaded,
                             total: size
-                        };
+                        }
                     } else {
-                        Module.dataFileDownloads[url].loaded = event.loaded;
+                        Module.dataFileDownloads[url].loaded = event.loaded
                     }
-        
-                    // Výpočet celkového progresu
                     var total = 0;
                     var loaded = 0;
                     var num = 0;
-        
                     for (var download in Module.dataFileDownloads) {
                         var data = Module.dataFileDownloads[download];
                         total += data.total;
                         loaded += data.loaded;
-                        num++;
+                        num++
                     }
-        
                     total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-                    Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`);
+                    Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`)
                 } else if (!Module.dataFileDownloads) {
-                    Module["setStatus"]?.("Downloading data...");
+                    Module["setStatus"]?.("Downloading data...")
                 }
-            };
-        
+            }
+            ;
             xhr.onerror = function(event) {
-                throw new Error("NetworkError for: " + packageName);
-            };
-        
+                throw new Error("NetworkError for: " + packageName)
+            }
+            ;
             xhr.onload = function(event) {
-                if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) {
+                if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || xhr.status == 0 && xhr.response) {
                     var packageData = xhr.response;
-                    callback(packageData);
+                    callback(packageData)
                 } else {
-                    throw new Error(xhr.statusText + " : " + xhr.responseURL);
+                    throw new Error(xhr.statusText + " : " + xhr.responseURL)
                 }
-            };
-        
-            xhr.send(null);
+            }
+            ;
+            xhr.send(null)
         }
         function handleError(error) {
             console.error("package error:", error)
