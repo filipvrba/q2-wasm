@@ -27,70 +27,118 @@ Module.expectedDataFileDownloads++;
         }
         var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
         var REMOTE_PACKAGE_SIZE = metadata["remote_package_size"];
-        function fetchRemotePackage(packageName, packageSize, callback, errback) {
-            console.log(packageName, packageSize);
 
-            if (typeof process === "object" && typeof process.versions === "object" && typeof process.versions.node === "string") {
-                require("fs").readFile(packageName, function(err, contents) {
-                    if (err) {
-                        errback(err)
-                    } else {
-                        callback(contents.buffer)
-                    }
-                });
-                return
-            }
-            var xhr = new XMLHttpRequest;
-            xhr.open("GET", packageName, true);
-            xhr.responseType = "arraybuffer";
-            xhr.onprogress = function(event) {
-                var url = packageName;
-                var size = packageSize;
-                if (event.total)
-                    size = event.total;
-                if (event.loaded) {
-                    if (!xhr.addedTotal) {
-                        xhr.addedTotal = true;
-                        if (!Module.dataFileDownloads)
-                            Module.dataFileDownloads = {};
-                        Module.dataFileDownloads[url] = {
-                            loaded: event.loaded,
-                            total: size
-                        }
-                    } else {
-                        Module.dataFileDownloads[url].loaded = event.loaded
-                    }
-                    var total = 0;
-                    var loaded = 0;
-                    var num = 0;
-                    for (var download in Module.dataFileDownloads) {
-                        var data = Module.dataFileDownloads[download];
-                        total += data.total;
-                        loaded += data.loaded;
-                        num++
-                    }
-                    total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-                    Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`)
-                } else if (!Module.dataFileDownloads) {
-                    Module["setStatus"]?.("Downloading data...")
-                }
-            }
-            ;
-            xhr.onerror = function(event) {
-                throw new Error("NetworkError for: " + packageName)
-            }
-            ;
-            xhr.onload = function(event) {
-                if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || xhr.status == 0 && xhr.response) {
-                    var packageData = xhr.response;
-                    callback(packageData)
-                } else {
-                    throw new Error(xhr.statusText + " : " + xhr.responseURL)
-                }
-            }
-            ;
-            xhr.send(null)
+        function openDatabase(dbName, storeName, callback) {
+            const request = indexedDB.open(dbName, 1);
+        
+            request.onupgradeneeded = function(event) {
+                const db = event.target.result;
+                db.createObjectStore(storeName);
+            };
+        
+            request.onsuccess = function(event) {
+                const db = event.target.result;
+                callback(db);
+            };
+        
+            request.onerror = function(event) {
+                console.error("Database error: ", event.target.error);
+            };
         }
+        
+        function fetchRemotePackage(packageName, packageSize, callback, errback) {
+            const dbName = "fileStorage";
+            const storeName = "files";
+        
+            // Nejprve zkontroluj, zda je soubor již uložen v IndexedDB
+            openDatabase(dbName, storeName, function(db) {
+                const transaction = db.transaction([storeName], "readonly");
+                const objectStore = transaction.objectStore(storeName);
+                const request = objectStore.get(packageName);
+        
+                request.onsuccess = function(event) {
+                    const result = event.target.result;
+                    if (result) {
+                        console.log("File loaded from IndexedDB");
+                        callback(result);
+                    } else {
+                        // Soubor není v IndexedDB, stáhnout ho
+                        console.log("File not found in IndexedDB, downloading...");
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("GET", packageName, true);
+                        xhr.responseType = "arraybuffer";
+        
+                        xhr.onprogress = function(event) {
+                            var url = packageName;
+                            var size = packageSize;
+        
+                            if (event.total) {
+                                size = event.total;
+                            }
+        
+                            if (event.loaded) {
+                                if (!xhr.addedTotal) {
+                                    xhr.addedTotal = true;
+                                    if (!Module.dataFileDownloads) {
+                                        Module.dataFileDownloads = {};
+                                    }
+                                    Module.dataFileDownloads[url] = {
+                                        loaded: event.loaded,
+                                        total: size
+                                    };
+                                } else {
+                                    Module.dataFileDownloads[url].loaded = event.loaded;
+                                }
+        
+                                // Výpočet celkového progresu
+                                var total = 0;
+                                var loaded = 0;
+                                var num = 0;
+        
+                                for (var download in Module.dataFileDownloads) {
+                                    var data = Module.dataFileDownloads[download];
+                                    total += data.total;
+                                    loaded += data.loaded;
+                                    num++;
+                                }
+        
+                                total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+                                Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`);
+                            } else if (!Module.dataFileDownloads) {
+                                Module["setStatus"]?.("Downloading data...");
+                            }
+                        };
+        
+                        xhr.onerror = function(event) {
+                            throw new Error("NetworkError for: " + packageName);
+                        };
+        
+                        xhr.onload = function(event) {
+                            if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) {
+                                var packageData = xhr.response;
+        
+                                // Uloží data do IndexedDB
+                                const transaction = db.transaction([storeName], "readwrite");
+                                const objectStore = transaction.objectStore(storeName);
+                                objectStore.put(packageData, packageName);
+        
+                                console.log("File downloaded and stored in IndexedDB");
+                                callback(packageData);
+                            } else {
+                                throw new Error(xhr.statusText + " : " + xhr.responseURL);
+                            }
+                        };
+        
+                        xhr.send(null);
+                    }
+                };
+        
+                request.onerror = function(event) {
+                    errback(event.target.error);
+                };
+            });
+        }
+
         function handleError(error) {
             console.error("package error:", error)
         }
