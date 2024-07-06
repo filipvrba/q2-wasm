@@ -2,7 +2,7 @@
     "builds": [
         {
             "src": "public/quake2.data",
-            "use": "now/static"
+            "use": "@vercel/static"
         }
     ]
 }
