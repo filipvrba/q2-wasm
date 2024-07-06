@@ -1,0 +1,9 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "public/quake2.data",
+            "use": "@vercel/git-lfs"
+        }
+    ]
+}
