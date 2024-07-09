@@ -1,0 +1,87 @@
+.emscripten {
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block
+}
+
+textarea.emscripten {
+    font-family: monospace;
+    font-size: 14px;
+    width: calc(100% - 24px);
+    height: calc(100vh - 24px);
+    margin-top: 8px;
+    background-color: inherit;
+    color: silver;
+    border: 1px solid #404040;
+    resize: none;
+    display: none;
+    outline: 0
+}
+
+div.emscripten {
+    text-align: center
+}
+
+canvas.emscripten {
+    border: 0 none;
+    background-color: #000;
+    display: none;
+    outline: 0
+}
+
+.spinner {
+    height: 50px;
+    width: 50px;
+    margin: 0 auto;
+    -webkit-animation: rotation .8s linear infinite;
+    -moz-animation: rotation .8s linear infinite;
+    -o-animation: rotation .8s linear infinite;
+    animation: rotation .8s linear infinite;
+    border-left: 10px solid #606020;
+    border-right: 10px solid #606020;
+    border-bottom: 10px solid #606020;
+    border-top: 10px solid #ffffa0;
+    border-radius: 100%;
+    background-color: #202020
+}
+
+@-webkit-keyframes rotation {
+    from {
+        -webkit-transform: rotate(0)
+    }
+
+    to {
+        -webkit-transform: rotate(360deg)
+    }
+}
+
+@-moz-keyframes rotation {
+    from {
+        -moz-transform: rotate(0)
+    }
+
+    to {
+        -moz-transform: rotate(360deg)
+    }
+}
+
+@-o-keyframes rotation {
+    from {
+        -o-transform: rotate(0)
+    }
+
+    to {
+        -o-transform: rotate(360deg)
+    }
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0)
+    }
+
+    to {
+        transform: rotate(360deg)
+    }
+}
