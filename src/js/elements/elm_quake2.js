@@ -11,10 +11,6 @@ export default class ElmQuake2 extends HTMLElement {
     )
   };
 
-  disconnectedCallback() {
-    return null
-  };
-
   initElm() {
     let template = `${`
 <figure id=spinner style=overflow:visible>

@@ -13,9 +13,6 @@ export default class ElmQuake2 < HTMLElement
     end
   end
 
-  def disconnected_callback()
-  end
-
   def init_elm()
     template = """
 <figure id=spinner style=overflow:visible>
