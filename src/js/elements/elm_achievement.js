@@ -47,18 +47,8 @@ export default class ElmAchievement extends HTMLElement {
     return this.innerHTML = template
   };
 
-  playSound() {
-    let audio = new Audio("/mp3/achievement_01.mp3");
-    return audio.play()
-  };
-
   display(isShow) {
-    if (isShow) {
-      this._notification.classList.add("show");
-      return this.playSound()
-    } else {
-      return this._notification.classList.remove("show")
-    }
+    return isShow ? this._notification.classList.add("show") : this._notification.classList.remove("show")
   }
 };
 

@@ -56,15 +56,9 @@ export default class ElmAchievement < HTMLElement
     self.innerHTML = template
   end
 
-  def play_sound()
-    audio = Audio.new('/mp3/achievement_01.mp3')
-    audio.play()
-  end
-
   def display(is_show)
     if is_show
       @notification.class_list.add('show')
-      play_sound()
     else
       @notification.class_list.remove('show')
     end
