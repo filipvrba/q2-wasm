@@ -27,21 +27,17 @@ export default class CAchievements {
     let values = options.s_values;
 
     return this.getDataFromObj(achievementId, values, (data) => {
-      let descriptionIndex, description;
+      let description = data.description;
 
-      if (data.description) {
-        let [descriptionIndex, description] = data.description;
+      return this._element.cDatabase.unlockAchievement(
+        achievementId,
+        data,
 
-        return this._element.cDatabase.unlockAchievement(
-          achievementId,
-          descriptionIndex,
-
-          () => {
-            let showOptions = {img: data.img, title: data.title, description};
-            return Events.emit("#app", ElmAchievement.ENVS.show, showOptions)
-          }
-        )
-      }
+        () => {
+          let showOptions = {img: data.img, title: data.title, description};
+          return Events.emit("#app", ElmAchievement.ENVS.show, showOptions)
+        }
+      )
     })
   };
 
@@ -53,16 +49,7 @@ export default class CAchievements {
         let achievement = objAchivements.ids[0];
         let img = achievement.img;
         let title = achievement.name;
-
-        let descriptionIndex = achievement.values.findIndex(value => (
-          value.level_name.trim().toLowerCase() === values.trim().toLowerCase()
-        ));
-
-        let description = descriptionIndex === -1 ? null : [
-          descriptionIndex,
-          values
-        ];
-
+        let description = values;
         if (callback) return callback({img, title, description})
       })
     }

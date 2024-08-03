@@ -24,17 +24,15 @@ export default class CAchievements
     values         = options['s_values']
 
     get_data_from_obj(achievement_id, values) do |data|
-      if data.description
-        description_index, description = data.description
+      description = data.description
 
-        @element.c_database.unlock_achievement(achievement_id, description_index) do
-          show_options = {
-            img: data.img,
-            title: data.title,
-            description: description
-          }
-          Events.emit('#app', ElmAchievement::ENVS.show, show_options)
-        end
+      @element.c_database.unlock_achievement(achievement_id, data) do
+        show_options = {
+          img: data.img,
+          title: data.title,
+          description: description
+        }
+        Events.emit('#app', ElmAchievement::ENVS.show, show_options)
       end
     end
   end
@@ -46,14 +44,7 @@ export default class CAchievements
         achievement       = obj_achivements.ids[0]
         img               = achievement.img
         title             = achievement.name
-        description_index = achievement.values.find_index(lambda do |value|
-                              value['level_name']
-                              .strip()
-                              .downcase() == values
-                                            .strip()
-                                            .downcase()
-                            end)
-        description       = description_index == -1 ? nil : [description_index, values]
+        description       = values
 
         callback({
           img: img,
