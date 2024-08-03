@@ -10,6 +10,12 @@ class Net {
     }).then(() => {
       if (callback) return callback()
     })
+  };
+
+  static objCurl(url, callback) {
+    return fetch(url).then(response => response.json()).then((text) => {
+      if (callback) return callback(text)
+    })
   }
 };
 

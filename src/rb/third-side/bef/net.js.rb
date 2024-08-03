@@ -18,9 +18,9 @@ def bef_json(url, &callback)
 end
 Net.prototype.constructor.bef_json = bef_json
 
-def bef_send(method, query, &callback)
+def bef_send(method, query, is_verbose = true, &callback)
   method = method.upcase()
-  
+
   fetch(ENV::VITE_URL_API, {
     method: method,
     headers: {
@@ -35,11 +35,16 @@ def bef_send(method, query, &callback)
   .then(lambda do |data|
     if data['status_code'] == 403 || data['status_code'] == 405 ||
         data.status == Net::SQL_ERR
-      console.error("#{method}: #{data['status_code']} #{data.status}")
+
+      console.error("#{method}: #{data['status_code']} #{data.status}") if is_verbose
       callback(false) if callback
     else
       callback(true) if callback
     end
+  end)
+  .catch(lambda do |err|
+    console.error(err) if is_verbose
+    Events.emit('#app', 'befError', err)
   end)
 end
 Net.prototype.constructor.bef_send = bef_send

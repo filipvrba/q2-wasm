@@ -1,0 +1,79 @@
+{
+    "ids": [
+        {
+            "name": "Smrtící maniak",
+            "values": [
+                {
+                    "level_name": "Outer Base"
+                },
+                {
+                    "level_name": "Installation"
+                },
+                {
+                    "level_name": "Comm Center"
+                },
+                {
+                    "level_name": "Lost Station"
+                },
+                {
+                    "level_name": "Supply Station"
+                },
+                {
+                    "level_name": "Ammo Depot"
+                },
+                {
+                    "level_name": "Sudden Death"
+                },
+                {
+                    "level_name": "Upper Mines"
+                },
+                {
+                    "level_name": "Borehole"
+                },
+                {
+                    "level_name": "Drilling Area"
+                },
+                {
+                    "level_name": "Lower Mines"
+                },
+                {
+                    "level_name": "Receiving Center"
+                },
+                {
+                    "level_name": "Sudden Death"
+                },
+                {
+                    "level_name": "Warehouse"
+                },
+                {
+                    "level_name": "Main Gate"
+                },
+                {
+                    "level_name": "Power Plant"
+                },
+                {
+                    "level_name": "Big Gun"
+                },
+                {
+                    "level_name": "Hangar"
+                },
+                {
+                    "level_name": "Factory"
+                },
+                {
+                    "level_name": "Power Plant"
+                },
+                {
+                    "level_name": "Inner Chamber"
+                },
+                {
+                    "level_name": "Outer Courts"
+                },
+                {
+                    "level_name": "Final Showdown"
+                }
+            ],
+            "img": "/png/achievement_0.png"
+        }
+    ]
+}

@@ -1,6 +1,14 @@
 import { ENV } from "../../env";
 
 class Database {
+  set isVerbose(isVerbose) {
+    this._isVerbose = isVerbose
+  };
+
+  constructor() {
+    this._isVerbose = true
+  };
+
   query(query, callback) {
     let isSet = this.set(query, (data) => {
       if (callback) return callback(data)
@@ -29,19 +37,19 @@ class Database {
     if (lowQuery.indexOf("insert into") > -1 || lowQuery.indexOf("create table") > -1) {
       isActive = true;
 
-      Net.befSend("post", query, (data) => {
+      Net.befSend("post", query, this._isVerbose, (data) => {
         if (callback) return callback(data)
       })
     } else if (lowQuery.indexOf("delete") > -1) {
       isActive = true;
 
-      Net.befSend("delete", query, (data) => {
+      Net.befSend("delete", query, this._isVerbose, (data) => {
         if (callback) return callback(data)
       })
     } else if (lowQuery.indexOf("update") > -1) {
       isActive = true;
 
-      Net.befSend("patch", query, (data) => {
+      Net.befSend("patch", query, this._isVerbose, (data) => {
         if (callback) return callback(data)
       })
     };

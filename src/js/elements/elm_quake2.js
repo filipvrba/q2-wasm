@@ -1,14 +1,34 @@
+import CAchievements from "../components/elm-quake2/achievements";
+import CDatabase from "../components/elm-quake2/database";
+
 export default class ElmQuake2 extends HTMLElement {
+  get cDatabase() {
+    return this._cDatabase
+  };
+
+  get newsletterId() {
+    return this._newsletterId
+  };
+
   constructor() {
     super();
+    this._newsletterId = parseInt(this.getAttribute("newsletter-id"));
+    this._cAchievements = new CAchievements(this);
+    this._cDatabase = new CDatabase(this);
     this.initElm()
   };
 
   connectedCallback() {
+    this._cAchievements.connectedCallback();
+
     return Net.loadScript(
       "/module.js",
       () => Net.loadScript("/quake2.js", () => Quake2Init())
     )
+  };
+
+  disconnectedCallback() {
+    return this._cAchievements.disconnectedCallback()
   };
 
   initElm() {
@@ -27,6 +47,8 @@ export default class ElmQuake2 extends HTMLElement {
 <textarea class=emscripten id=output readonly></textarea>
 <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
 <a hidden id=exportFile></a>
+
+<elm-achievement></elm-achievement>
     `}`;
     return this.innerHTML = template
   }

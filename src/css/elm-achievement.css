@@ -1,0 +1,25 @@
+.achievement-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: #404040;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    padding: 15px;
+
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.5s;
+}
+
+.achievement-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.achievement-notification img {
+    width: 64px;
+    height: 64px;
+}

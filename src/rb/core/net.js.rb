@@ -12,5 +12,15 @@ class Net
       callback() if callback
     end)
   end
+
+  def self.obj_curl(url, &callback)
+    fetch(url)
+    .then(lambda do |response|
+      response.json()
+    end)
+    .then(lambda do |text|
+      callback(text) if callback
+    end)
+  end
 end
 window.Net = Net

@@ -4,9 +4,9 @@ export default class ElmLogin < HTMLElement
   end
 
   def connected_callback()
-    log_in do |is_logged_in|
-      if is_logged_in
-        self.innerHTML = "<elm-quake2></elm-quake2>"
+    log_in do |logged_in|
+      unless logged_in == nil
+        self.innerHTML = "<elm-quake2 newsletter-id='#{logged_in}'></elm-quake2>"
       else
         self.innerHTML = """
         <div class='container col-lg-6 centered-container'>
@@ -40,8 +40,8 @@ export default class ElmLogin < HTMLElement
             "WHERE token = '#{e_token}';"
 
     __bef_db.get(query) do |rows|
-      is_logged_in = rows.length > 0 ? true : false
-      callback(is_logged_in) if callback
+      logged_in = rows.length > 0 ? rows[0].id : nil
+      callback(logged_in) if callback
     end
   end
 end

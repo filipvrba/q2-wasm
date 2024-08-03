@@ -4,8 +4,8 @@ export default class ElmLogin extends HTMLElement {
   };
 
   connectedCallback() {
-    return this.logIn(isLoggedIn => (
-      isLoggedIn ? this.innerHTML = "<elm-quake2></elm-quake2>" : this.innerHTML = `${`
+    return this.logIn(loggedIn => (
+      loggedIn === null ? this.innerHTML = `${`
         <div class='container col-lg-6 centered-container'>
             <div class='card text-center'>
                 <div class='card-body'>
@@ -23,7 +23,7 @@ export default class ElmLogin extends HTMLElement {
                 </div>
             </div>
         </div>
-        `}`
+        `}` : this.innerHTML = `<elm-quake2 newsletter-id='${loggedIn}'></elm-quake2>`
     ))
   };
 
@@ -36,8 +36,8 @@ export default class ElmLogin extends HTMLElement {
     let query = `SELECT id FROM newsletter WHERE token = '${eToken}';`;
 
     return _BefDb.get(query, (rows) => {
-      let isLoggedIn = rows.length > 0 ? true : false;
-      if (callback) return callback(isLoggedIn)
+      let loggedIn = rows.length > 0 ? rows[0].id : null;
+      if (callback) return callback(loggedIn)
     })
   }
 }
