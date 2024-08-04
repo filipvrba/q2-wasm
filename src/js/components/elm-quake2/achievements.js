@@ -31,7 +31,7 @@ export default class CAchievements {
 
       return this._element.cDatabase.unlockAchievement(
         achievementId,
-        data,
+        data.description,
 
         () => {
           let showOptions = {img: data.img, title: data.title, description};

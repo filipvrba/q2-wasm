@@ -26,7 +26,7 @@ export default class CAchievements
     get_data_from_obj(achievement_id, values) do |data|
       description = data.description
 
-      @element.c_database.unlock_achievement(achievement_id, data) do
+      @element.c_database.unlock_achievement(achievement_id, data.description) do
         show_options = {
           img: data.img,
           title: data.title,
