@@ -21,6 +21,8 @@ export default async function handler(req, res) {
     const uuid = document.querySelector('input[name="uuid"]').value;
     const at = document.querySelector('input[name="at"]').value;
 
+    console.log(uuid, at);
+
     // 3. Sestavit URL pro stažení souboru
     const downloadUrl = `https://drive.usercontent.google.com/download?id=${id}&export=download&authuser=0&confirm=t&uuid=${uuid}&at=${at}`;
 
