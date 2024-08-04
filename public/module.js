@@ -108,10 +108,10 @@ onRuntimeInitialized: ()=>{
 };
 Module.arguments = window.location.search.length > 1 ? window.location.search.substr(1).split("&") : [],
 Module.setStatus("Downloading..."),
-window.onerror = () => {
-    Module.setStatus("Exception thrown, see JavaScript console"),
-    spinnerElement.style.display = "none",
-    Module.setStatus = e=>{
-        e && console.error("[post-exception status] " + e)
-    }
+window.onerror = ()=>{
+Module.setStatus("Exception thrown, see JavaScript console"),
+spinnerElement.style.display = "none",
+Module.setStatus = e=>{
+    e && console.error("[post-exception status] " + e)
+}
 }

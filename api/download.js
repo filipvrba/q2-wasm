@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
-    const fileId = 'id:8Hd1Gj6sMs4AAAAAAAAAEA'
-    const ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN; // Vložte svůj Dropbox access token
+    const file         = req.query.file;
+    const filePath     = `/${file}`;
+    const ACCESS_TOKEN = process.env.DROPBOX_ACCESS_TOKEN;
 
     try {
         const response = await axios({
@@ -13,7 +14,7 @@ export default async function handler(req, res) {
                 'Content-Type': 'application/json'
             },
             data: {
-                path: fileId
+                path: filePath
             }
         });
 

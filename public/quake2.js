@@ -1,23 +1,19 @@
 window.Quake2Init = () => {
     var Module = typeof window.Module != "undefined" ? window.Module : {};
-
+    
     var ENVIRONMENT_IS_WEB = typeof window == "object";
     var ENVIRONMENT_IS_WORKER = typeof importScripts == "function";
     var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string";
-
     if (ENVIRONMENT_IS_NODE) {}
     if (!Module.expectedDataFileDownloads) {
         Module.expectedDataFileDownloads = 0
     }
     Module.expectedDataFileDownloads++;
-
     (()=>{
         var isPthread = typeof ENVIRONMENT_IS_PTHREAD != "undefined" && ENVIRONMENT_IS_PTHREAD;
         var isWasmWorker = typeof ENVIRONMENT_IS_WASM_WORKER != "undefined" && ENVIRONMENT_IS_WASM_WORKER;
-
         if (isPthread || isWasmWorker)
             return;
-
         function loadPackage(metadata) {
             var PACKAGE_PATH = "";
             if (typeof window === "object") {
@@ -27,38 +23,19 @@ window.Quake2Init = () => {
             }
             var PACKAGE_NAME = "release/quake2.data";
             var REMOTE_PACKAGE_BASE = "quake2.data";
-            // var REMOTE_PACKAGE_BASE = "id:8Hd1Gj6sMs4AAAAAAAAAEA";
             if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
                 Module["locateFile"] = Module["locateFilePackage"];
                 err("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
             }
             var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
             var REMOTE_PACKAGE_SIZE = metadata["remote_package_size"];
-
-            function openDatabase(dbName, storeName, callback) {
-                const request = indexedDB.open(dbName, 1);
-            
-                request.onupgradeneeded = function(event) {
-                    const db = event.target.result;
-                    db.createObjectStore(storeName);
-                };
-            
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    callback(db);
-                };
-            
-                request.onerror = function(event) {
-                    console.error("Database error: ", event.target.error);
-                };
-            }
             
             function fetchRemotePackage(packageId, packageSize, callback, errback) {
                 const dbName = "fileStorage";
                 const storeName = "files";
             
                 // URL na serverless funkci na Vercel
-                const proxyUrl = `/api/download`;
+                const proxyUrl = `/api/download?file=${encodeURIComponent(packageId)}`;
             
                 // Funkce pro otevření IndexedDB
                 function openDatabase(dbName, storeName, callback) {
@@ -181,7 +158,7 @@ window.Quake2Init = () => {
                         errback(event.target.error);
                     };
                 });
-            }                  
+            }
 
             function handleError(error) {
                 console.error("package error:", error)
@@ -283,9 +260,9 @@ window.Quake2Init = () => {
             }, {
                 filename: "/baseq2/wasm.cfg",
                 start: 197035686,
-                end: 197036727
+                end: 197036865
             }],
-            remote_package_size: 197036727
+            remote_package_size: 197036865
         })
     }
     )();
@@ -7320,6 +7297,10 @@ window.Quake2Init = () => {
     }
     ;
     _eglWaitNative.sig = "ii";
+    function _emit_achievement(...args) {
+        return wasmImports["emit_achievement"](...args)
+    }
+    _emit_achievement.stub = true;
     var readEmAsmArgsArray = [];
     var readEmAsmArgs = (sigPtr,buf)=>{
         readEmAsmArgsArray.length = 0;
@@ -7379,8 +7360,7 @@ window.Quake2Init = () => {
                 }
                 return true
             }
-            for (var i in JSEvents.deferredCalls) {
-                var call = JSEvents.deferredCalls[i];
+            for (var call of JSEvents.deferredCalls) {
                 if (call.targetFunction == targetFunction && arraysHaveEqualContent(call.argsList, argsList)) {
                     return
                 }
@@ -7393,12 +7373,7 @@ window.Quake2Init = () => {
             JSEvents.deferredCalls.sort((x,y)=>x.precedence < y.precedence)
         },
         removeDeferredCalls(targetFunction) {
-            for (var i = 0; i < JSEvents.deferredCalls.length; ++i) {
-                if (JSEvents.deferredCalls[i].targetFunction == targetFunction) {
-                    JSEvents.deferredCalls.splice(i, 1);
-                    --i
-                }
-            }
+            JSEvents.deferredCalls = JSEvents.deferredCalls.filter(call=>call.targetFunction != targetFunction)
         },
         canPerformEventHandlerRequests() {
             if (navigator.userActivation) {
@@ -7410,10 +7385,9 @@ window.Quake2Init = () => {
             if (!JSEvents.canPerformEventHandlerRequests()) {
                 return
             }
-            for (var i = 0; i < JSEvents.deferredCalls.length; ++i) {
-                var call = JSEvents.deferredCalls[i];
-                JSEvents.deferredCalls.splice(i, 1);
-                --i;
+            var deferredCalls = JSEvents.deferredCalls;
+            JSEvents.deferredCalls = [];
+            for (var call of deferredCalls) {
                 call.targetFunction(...call.argsList)
             }
         },
@@ -10770,8 +10744,7 @@ window.Quake2Init = () => {
         if (!target.requestFullscreen && !target.webkitRequestFullscreen) {
             return -3
         }
-        var canPerformRequests = JSEvents.canPerformEventHandlerRequests();
-        if (!canPerformRequests) {
+        if (!JSEvents.canPerformEventHandlerRequests()) {
             if (strategy.deferUntilInEventHandler) {
                 JSEvents.deferCall(JSEvents_requestFullscreen, 1, [target, strategy]);
                 return 1
@@ -10801,8 +10774,7 @@ window.Quake2Init = () => {
         if (!target.requestPointerLock) {
             return -1
         }
-        var canPerformRequests = JSEvents.canPerformEventHandlerRequests();
-        if (!canPerformRequests) {
+        if (!JSEvents.canPerformEventHandlerRequests()) {
             if (deferUntilInEventHandler) {
                 JSEvents.deferCall(requestPointerLock, 2, [target]);
                 return 1
@@ -11018,11 +10990,11 @@ window.Quake2Init = () => {
             HEAPF64[keyEventData >> 3] = e.timeStamp;
             var idx = keyEventData >> 2;
             HEAP32[idx + 2] = e.location;
-            HEAP8[idx + 12] = e.ctrlKey;
-            HEAP8[idx + 13] = e.shiftKey;
-            HEAP8[idx + 14] = e.altKey;
-            HEAP8[idx + 15] = e.metaKey;
-            HEAP8[idx + 16] = e.repeat;
+            HEAP8[keyEventData + 12] = e.ctrlKey;
+            HEAP8[keyEventData + 13] = e.shiftKey;
+            HEAP8[keyEventData + 14] = e.altKey;
+            HEAP8[keyEventData + 15] = e.metaKey;
+            HEAP8[keyEventData + 16] = e.repeat;
             HEAP32[idx + 5] = e.charCode;
             HEAP32[idx + 6] = e.keyCode;
             HEAP32[idx + 7] = e.which;
@@ -11063,10 +11035,10 @@ window.Quake2Init = () => {
         HEAP32[idx + 3] = e.screenY;
         HEAP32[idx + 4] = e.clientX;
         HEAP32[idx + 5] = e.clientY;
-        HEAP8[idx + 24] = e.ctrlKey;
-        HEAP8[idx + 25] = e.shiftKey;
-        HEAP8[idx + 26] = e.altKey;
-        HEAP8[idx + 27] = e.metaKey;
+        HEAP8[eventStruct + 24] = e.ctrlKey;
+        HEAP8[eventStruct + 25] = e.shiftKey;
+        HEAP8[eventStruct + 26] = e.altKey;
+        HEAP8[eventStruct + 27] = e.metaKey;
         HEAP16[idx * 2 + 14] = e.button;
         HEAP16[idx * 2 + 15] = e.buttons;
         HEAP32[idx + 8] = e["movementX"];
@@ -11195,43 +11167,40 @@ window.Quake2Init = () => {
         target = findEventTarget(target);
         var touchEventHandlerFunc = e=>{
             var t, touches = {}, et = e.touches;
-            for (var i = 0; i < et.length; ++i) {
-                t = et[i];
+            for (let t of et) {
                 t.isChanged = t.onTarget = 0;
                 touches[t.identifier] = t
             }
-            for (var i = 0; i < e.changedTouches.length; ++i) {
-                t = e.changedTouches[i];
+            for (let t of e.changedTouches) {
                 t.isChanged = 1;
                 touches[t.identifier] = t
             }
-            for (var i = 0; i < e.targetTouches.length; ++i) {
-                touches[e.targetTouches[i].identifier].onTarget = 1
+            for (let t of e.targetTouches) {
+                touches[t.identifier].onTarget = 1
             }
             var touchEvent = JSEvents.touchEvent;
             HEAPF64[touchEvent >> 3] = e.timeStamp;
-            var idx = touchEvent >> 2;
-            HEAP8[idx + 12] = e.ctrlKey;
-            HEAP8[idx + 13] = e.shiftKey;
-            HEAP8[idx + 14] = e.altKey;
-            HEAP8[idx + 15] = e.metaKey;
-            idx += 4;
+            HEAP8[touchEvent + 12] = e.ctrlKey;
+            HEAP8[touchEvent + 13] = e.shiftKey;
+            HEAP8[touchEvent + 14] = e.altKey;
+            HEAP8[touchEvent + 15] = e.metaKey;
+            var idx = touchEvent + 16;
             var targetRect = getBoundingClientRect(target);
             var numTouches = 0;
-            for (var i in touches) {
-                t = touches[i];
-                HEAP32[idx + 0] = t.identifier;
-                HEAP32[idx + 1] = t.screenX;
-                HEAP32[idx + 2] = t.screenY;
-                HEAP32[idx + 3] = t.clientX;
-                HEAP32[idx + 4] = t.clientY;
-                HEAP32[idx + 5] = t.pageX;
-                HEAP32[idx + 6] = t.pageY;
+            for (let t of Object.values(touches)) {
+                var idx32 = idx >> 2;
+                HEAP32[idx32 + 0] = t.identifier;
+                HEAP32[idx32 + 1] = t.screenX;
+                HEAP32[idx32 + 2] = t.screenY;
+                HEAP32[idx32 + 3] = t.clientX;
+                HEAP32[idx32 + 4] = t.clientY;
+                HEAP32[idx32 + 5] = t.pageX;
+                HEAP32[idx32 + 6] = t.pageY;
                 HEAP8[idx + 28] = t.isChanged;
                 HEAP8[idx + 29] = t.onTarget;
-                HEAP32[idx + 8] = t.clientX - (targetRect.left | 0);
-                HEAP32[idx + 9] = t.clientY - (targetRect.top | 0);
-                idx += 12;
+                HEAP32[idx32 + 8] = t.clientX - (targetRect.left | 0);
+                HEAP32[idx32 + 9] = t.clientY - (targetRect.top | 0);
+                idx += 48;
                 if (++numTouches > 31) {
                     break
                 }
@@ -11772,6 +11741,7 @@ window.Quake2Init = () => {
         eglTerminate: _eglTerminate,
         eglWaitGL: _eglWaitGL,
         eglWaitNative: _eglWaitNative,
+        emit_achievement: _emit_achievement,
         emscripten_asm_const_double: _emscripten_asm_const_double,
         emscripten_asm_const_int: _emscripten_asm_const_int,
         emscripten_asm_const_int_sync_on_main_thread: _emscripten_asm_const_int_sync_on_main_thread,
@@ -12416,4 +12386,4 @@ window.Quake2Init = () => {
     if (Module["noInitialRun"])
         shouldRunNow = false;
     run();
-}
+};
