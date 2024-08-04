@@ -23,3 +23,4 @@ public/quake2.data
 *.njsproj
 *.sln
 *.sw?
+.vercel
