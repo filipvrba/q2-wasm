@@ -26,8 +26,8 @@ window.Quake2Init = () => {
                 PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf("/")) + "/")
             }
             var PACKAGE_NAME = "release/quake2.data";
-            // var REMOTE_PACKAGE_BASE = "quake2.data";
-            var REMOTE_PACKAGE_BASE = "1h78Xh2Rl5EPX0Rz7-2JBEcX0Qr7ne3HW";
+            var REMOTE_PACKAGE_BASE = "quake2.data";
+            // var REMOTE_PACKAGE_BASE = "id:8Hd1Gj6sMs4AAAAAAAAAEA";
             if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
                 Module["locateFile"] = Module["locateFilePackage"];
                 err("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
@@ -57,8 +57,8 @@ window.Quake2Init = () => {
                 const dbName = "fileStorage";
                 const storeName = "files";
                 
-                // Proxy URL na serverless funkci
-                const proxyUrl = `/api/download?id=${packageId}`;
+                // URL na serverless funkci na Vercel
+                const proxyUrl = `/api/download`;
                 
                 // Funkce pro otevření IndexedDB
                 function openDatabase(dbName, storeName, callback) {
@@ -165,7 +165,7 @@ window.Quake2Init = () => {
                         errback(event.target.error);
                     };
                 });
-            }                            
+            }                      
 
             function handleError(error) {
                 console.error("package error:", error)
