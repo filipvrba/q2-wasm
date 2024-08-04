@@ -9,7 +9,7 @@ export default async function handler(req, res) {
             url: 'https://api.dropboxapi.com/2/files/get_temporary_link',
             method: 'post',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
                 'Content-Type': 'application/json'
             },
             data: {
