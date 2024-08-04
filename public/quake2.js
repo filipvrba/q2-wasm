@@ -26,7 +26,8 @@ window.Quake2Init = () => {
                 PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf("/")) + "/")
             }
             var PACKAGE_NAME = "release/quake2.data";
-            var REMOTE_PACKAGE_BASE = "quake2.data";
+            // var REMOTE_PACKAGE_BASE = "quake2.data";
+            var REMOTE_PACKAGE_BASE = "1h78Xh2Rl5EPX0Rz7-2JBEcX0Qr7ne3HW";
             if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
                 Module["locateFile"] = Module["locateFilePackage"];
                 err("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
@@ -52,15 +53,37 @@ window.Quake2Init = () => {
                 };
             }
             
-            function fetchRemotePackage(packageName, packageSize, callback, errback) {
+            function fetchRemotePackage(packageId, packageSize, callback, errback) {
                 const dbName = "fileStorage";
                 const storeName = "files";
+                
+                // Proxy URL na serverless funkci
+                const proxyUrl = `/api/download?id=${packageId}`;
+                
+                // Funkce pro otevření IndexedDB
+                function openDatabase(dbName, storeName, callback) {
+                    const request = indexedDB.open(dbName, 1);
             
-                // Nejprve zkontroluj, zda je soubor již uložen v IndexedDB
+                    request.onupgradeneeded = function(event) {
+                        const db = event.target.result;
+                        db.createObjectStore(storeName);
+                    };
+            
+                    request.onsuccess = function(event) {
+                        const db = event.target.result;
+                        callback(db);
+                    };
+            
+                    request.onerror = function(event) {
+                        console.error("Database error: ", event.target.error);
+                    };
+                }
+            
+                // Funkce pro stahování souboru
                 openDatabase(dbName, storeName, function(db) {
                     const transaction = db.transaction([storeName], "readonly");
                     const objectStore = transaction.objectStore(storeName);
-                    const request = objectStore.get(packageName);
+                    const request = objectStore.get(packageId);
             
                     request.onsuccess = function(event) {
                         const result = event.target.result;
@@ -68,14 +91,13 @@ window.Quake2Init = () => {
                             console.log("File loaded from IndexedDB");
                             callback(result);
                         } else {
-                            // Soubor není v IndexedDB, stáhnout ho
                             console.log("File not found in IndexedDB, downloading...");
                             var xhr = new XMLHttpRequest();
-                            xhr.open("GET", packageName, true);
+                            xhr.open("GET", proxyUrl, true);
                             xhr.responseType = "arraybuffer";
             
                             xhr.onprogress = function(event) {
-                                var url = packageName;
+                                var url = proxyUrl;
                                 var size = packageSize;
             
                                 if (event.total) {
@@ -116,7 +138,7 @@ window.Quake2Init = () => {
                             };
             
                             xhr.onerror = function(event) {
-                                throw new Error("NetworkError for: " + packageName);
+                                throw new Error("NetworkError for: " + proxyUrl);
                             };
             
                             xhr.onload = function(event) {
@@ -126,7 +148,7 @@ window.Quake2Init = () => {
                                     // Uloží data do IndexedDB
                                     const transaction = db.transaction([storeName], "readwrite");
                                     const objectStore = transaction.objectStore(storeName);
-                                    objectStore.put(packageData, packageName);
+                                    objectStore.put(packageData, packageId);
             
                                     console.log("File downloaded and stored in IndexedDB");
                                     callback(packageData);
@@ -143,7 +165,7 @@ window.Quake2Init = () => {
                         errback(event.target.error);
                     };
                 });
-            }
+            }                            
 
             function handleError(error) {
                 console.error("package error:", error)
