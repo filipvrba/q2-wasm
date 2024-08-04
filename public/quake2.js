@@ -56,10 +56,10 @@ window.Quake2Init = () => {
             function fetchRemotePackage(packageId, packageSize, callback, errback) {
                 const dbName = "fileStorage";
                 const storeName = "files";
-                
+            
                 // URL na serverless funkci na Vercel
                 const proxyUrl = `/api/download`;
-                
+            
                 // Funkce pro otevření IndexedDB
                 function openDatabase(dbName, storeName, callback) {
                     const request = indexedDB.open(dbName, 1);
@@ -92,72 +92,88 @@ window.Quake2Init = () => {
                             callback(result);
                         } else {
                             console.log("File not found in IndexedDB, downloading...");
-                            var xhr = new XMLHttpRequest();
-                            xhr.open("GET", proxyUrl, true);
-                            xhr.responseType = "arraybuffer";
             
-                            xhr.onprogress = function(event) {
-                                var url = proxyUrl;
-                                var size = packageSize;
+                            // Nejprve získání presigned URL od Vercel API
+                            fetch(proxyUrl)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    const downloadUrl = data.link;
+                                    
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open("GET", downloadUrl, true);
+                                    xhr.responseType = "arraybuffer";
             
-                                if (event.total) {
-                                    size = event.total;
-                                }
+                                    xhr.onprogress = function(event) {
+                                        var size = packageSize;
             
-                                if (event.loaded) {
-                                    if (!xhr.addedTotal) {
-                                        xhr.addedTotal = true;
-                                        if (!Module.dataFileDownloads) {
-                                            Module.dataFileDownloads = {};
+                                        if (event.total) {
+                                            size = event.total;
                                         }
-                                        Module.dataFileDownloads[url] = {
-                                            loaded: event.loaded,
-                                            total: size
-                                        };
-                                    } else {
-                                        Module.dataFileDownloads[url].loaded = event.loaded;
-                                    }
             
-                                    // Výpočet celkového progresu
-                                    var total = 0;
-                                    var loaded = 0;
-                                    var num = 0;
+                                        if (event.loaded) {
+                                            if (!xhr.addedTotal) {
+                                                xhr.addedTotal = true;
+                                                if (!Module.dataFileDownloads) {
+                                                    Module.dataFileDownloads = {};
+                                                }
+                                                Module.dataFileDownloads[downloadUrl] = {
+                                                    loaded: event.loaded,
+                                                    total: size
+                                                };
+                                            } else {
+                                                Module.dataFileDownloads[downloadUrl].loaded = event.loaded;
+                                            }
             
-                                    for (var download in Module.dataFileDownloads) {
-                                        var data = Module.dataFileDownloads[download];
-                                        total += data.total;
-                                        loaded += data.loaded;
-                                        num++;
-                                    }
+                                            // Výpočet celkového progresu
+                                            var total = 0;
+                                            var loaded = 0;
+                                            var num = 0;
             
-                                    total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-                                    Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`);
-                                } else if (!Module.dataFileDownloads) {
-                                    Module["setStatus"]?.("Downloading data...");
-                                }
-                            };
+                                            for (var download in Module.dataFileDownloads) {
+                                                var data = Module.dataFileDownloads[download];
+                                                total += data.total;
+                                                loaded += data.loaded;
+                                                num++;
+                                            }
             
-                            xhr.onerror = function(event) {
-                                throw new Error("NetworkError for: " + proxyUrl);
-                            };
+                                            total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+                                            Module["setStatus"]?.(`Downloading data... (${loaded}/${total})`);
+                                        } else if (!Module.dataFileDownloads) {
+                                            Module["setStatus"]?.("Downloading data...");
+                                        }
+                                    };
             
-                            xhr.onload = function(event) {
-                                if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) {
-                                    var packageData = xhr.response;
+                                    xhr.onerror = function(event) {
+                                        throw new Error("NetworkError for: " + downloadUrl);
+                                    };
             
-                                    // Uloží data do IndexedDB
-                                    const transaction = db.transaction([storeName], "readwrite");
-                                    const objectStore = transaction.objectStore(storeName);
-                                    objectStore.put(packageData, packageId);
+                                    xhr.onload = function(event) {
+                                        if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) {
+                                            var packageData = xhr.response;
             
-                                    console.log("File downloaded and stored in IndexedDB");
-                                    callback(packageData);
-                                } else {
-                                    throw new Error(xhr.statusText + " : " + xhr.responseURL);
-                                }
-                            };
+                                            // Uloží data do IndexedDB
+                                            const transaction = db.transaction([storeName], "readwrite");
+                                            const objectStore = transaction.objectStore(storeName);
+                                            objectStore.put(packageData, packageId);
             
-                            xhr.send(null);
+                                            console.log("File downloaded and stored in IndexedDB");
+                                            callback(packageData);
+                                        } else {
+                                            throw new Error(xhr.statusText + " : " + xhr.responseURL);
+                                        }
+                                    };
+            
+                                    xhr.send(null);
+                                })
+                                .catch(error => {
+                                    console.error("Error fetching presigned URL:", error);
+                                    errback(error);
+                                });
                         }
                     };
             
@@ -165,7 +181,7 @@ window.Quake2Init = () => {
                         errback(event.target.error);
                     };
                 });
-            }                      
+            }                  
 
             function handleError(error) {
                 console.error("package error:", error)

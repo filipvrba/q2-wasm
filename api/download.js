@@ -6,19 +6,20 @@ export default async function handler(req, res) {
 
     try {
         const response = await axios({
-            url: 'https://content.dropboxapi.com/2/files/download',
+            url: 'https://api.dropboxapi.com/2/files/get_temporary_link',
             method: 'post',
             headers: {
-                'Authorization': `Bearer ${ACCESS_TOKEN}`,
-                'Dropbox-API-Arg': JSON.stringify({ path: fileId }),
-                'Content-Type': ''
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
             },
-            responseType: 'arraybuffer'
+            data: {
+                path: fileId
+            }
         });
 
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${fileId}"`);
-        res.send(response.data);
+        const { link } = response.data;
+
+        res.status(200).json({ link });
     } catch (error) {
         console.error('Error fetching file from Dropbox:', error);
         res.status(500).send('Error fetching file from Dropbox');
