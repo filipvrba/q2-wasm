@@ -1,8 +1,8 @@
 #!/bin/bash
 
 rjsv -t -w -s src/rb -o src/js &
-vercel dev
-# npm run dev
+# vercel dev
+npm run dev
 
 trap - SIGINT
 kill $!

@@ -66,7 +66,7 @@ window.Quake2Init = () => {
                         } else {
                             // Soubor není v IndexedDB, stáhnout ho
                             console.log("File not found in IndexedDB, downloading...");
-                            const proxy_url = `/api/scl/fi/dnya07isacbkq7okti7vg/${packageName}?rlkey=cmvb9dlrx4al6o59e07o45wtz&st=cahd3xro&dl=1`;
+                            const proxy_url = `/api/scl/fi/dnya07isacbkq7okti7vg/quake2.data?rlkey=cmvb9dlrx4al6o59e07o45wtz&st=cahd3xro&dl=1`;
 
                             var xhr = new XMLHttpRequest();
                             xhr.open("GET", proxy_url, true);
