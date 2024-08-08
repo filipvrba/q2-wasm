@@ -1,15 +1,16 @@
+import { ENV } from "../../env";
+
 export default class CVersions {
   constructor(cDatabase) {
     this._cDatabase = cDatabase
   };
 
-  versionControl(callback) {
-    return this._cDatabase.getQuake2Version((version) => {
-      let localVersion = localStorage.getItem("version");
-      let isCurrentVersion = localVersion === version;
-      if (!isCurrentVersion) localStorage.setItem("version", version);
-      if (callback) return callback(isCurrentVersion)
-    })
+  versionControl() {
+    let version = ENV.VITE_GAME_VERSION;
+    let localVersion = localStorage.getItem("version");
+    let isCurrentVersion = localVersion === version;
+    if (!isCurrentVersion) localStorage.setItem("version", version);
+    return isCurrentVersion
   };
 
   removeDatabases(callback) {
@@ -31,16 +32,16 @@ export default class CVersions {
   };
 
   controller(callback) {
-    return this.versionControl((isCurrentVersion) => {
-      if (isCurrentVersion) {
-        console.log("The version is up to date.");
+    let isCurrentVersion = this.versionControl();
+
+    if (isCurrentVersion) {
+      console.log("The version is up to date.");
+      if (callback) return callback.call()
+    } else {
+      return this.removeDatabases(() => {
+        console.log("Deleted databases from IndexedDB.");
         if (callback) return callback.call()
-      } else {
-        return this.removeDatabases(() => {
-          console.log("Deleted databases from IndexedDB.");
-          if (callback) return callback.call()
-        })
-      }
-    })
+      })
+    }
   }
 }

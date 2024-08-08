@@ -39,9 +39,9 @@ export default class CAchievements
 
   def get_data_from_obj(achievement_id, values, &callback)
     case achievement_id
-    when 0
+    when 0..1
       Net.obj_curl('/json/achievements.json') do |obj_achivements|
-        achievement       = obj_achivements.ids[0]
+        achievement       = obj_achivements.ids[achievement_id]
         img               = achievement.img
         title             = achievement.name
         description       = values
@@ -51,6 +51,7 @@ export default class CAchievements
           title: title,
           description: description,
         }) if callback
+        return
       end
     end
   end  # get_data_from_obj

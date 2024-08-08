@@ -42,15 +42,16 @@ export default class CAchievements {
   };
 
   getDataFromObj(achievementId, values, callback) {
-    switch (achievementId) {
-    case 0:
+    switch (true) {
+    case achievementId >= 0 && achievementId <= 1:
 
       return Net.objCurl("/json/achievements.json", (objAchivements) => {
-        let achievement = objAchivements.ids[0];
+        let achievement = objAchivements.ids[achievementId];
         let img = achievement.img;
         let title = achievement.name;
         let description = values;
-        if (callback) return callback({img, title, description})
+        if (callback) callback({img, title, description});
+        return
       })
     }
   }

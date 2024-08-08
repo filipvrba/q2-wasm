@@ -3,6 +3,10 @@
         {
             "name": "Smrtící maniak",
             "img": "/png/achievement_0.png"
+        },
+        {
+            "name": "Expertní inženýr",
+            "img": "/png/achievement_1.png"
         }
     ]
 }
