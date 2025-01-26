@@ -10,7 +10,7 @@ export default = {
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         globPatterns: ['**/*'],
-        # maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 30 * 1024 * 1024,
       },
       manifest: {
         name: 'Quake 2',

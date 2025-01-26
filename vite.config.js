@@ -7,7 +7,8 @@ export default {plugins: [VitePWA({
   workbox: {
     cleanupOutdatedCaches: true,
     skipWaiting: true,
-    globPatterns: ["**/*"]
+    globPatterns: ["**/*"],
+    maximumFileSizeToCacheInBytes: 30 * 1_024 * 1_024
   },
 
   manifest: {
