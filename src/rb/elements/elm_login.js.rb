@@ -5,24 +5,58 @@ export default class ElmLogin < HTMLElement
   def initialize
     super
 
-    @e_token = URLParams.get('et')
+    @e_token_history = local_storage.get_item('q2et')
+    @e_token         = URLParams.get('et') || @e_token_history
     @c_database = CDatabase.new
     @c_versions = CVersions.new(@c_database)
   end
 
   def connected_callback()
-    @c_database.log_in(@e_token) do |logged_in|
-      unless logged_in == nil
-        @c_versions.controller() do
-          quake2_init_elm(logged_in)
+    Net.check_internet() do |is_online|
+      if is_online
+        @c_database.log_in(@e_token) do |logged_in|
+          unless logged_in == nil
+            local_storage.set_item('q2et', @e_token)
+
+            @c_versions.controller() do
+              quake2_init_elm(logged_in)
+            end
+          else
+            missing_email_init_elm()
+          end
         end
       else
-        missing_email_init_elm()
+        if local_storage.get_item('q2et')
+          quake2_init_elm(nil)
+        else
+          missing_et()
+        end
       end
     end
   end
 
   def disconnected_callback()
+  end
+
+  def missing_et()
+    self.innerHTML = """
+<div class='container col-lg-6 centered-container'>
+  <div class='card text-center'>
+    <div class='card-body'>
+      <i class='bi bi-exclamation-triangle-fill text-warning' style='font-size: 2rem;'></i>
+      <h3 class='card-title mt-3'>Chybějící Email</h3>
+      <p class='card-text'>
+        Momentálně jste v offline režimu a nemáte přístup ke hře Quake 2. 
+        Abyste mohli tuto hru hrát, je nutné být online a přihlásit se k odběru newsletteru. 
+        Po splnění těchto podmínek se vám odemkne možnost hrát hru i v offline režimu.
+      </p>
+      <a class='btn btn-secondary' href='https://filipvrba.vercel.app/#newsletter'>
+        <i class='bi bi-arrow-left-circle'></i> Zpět
+      </a>
+    </div>
+  </div>
+</div>
+    """
   end
 
   def missing_email_init_elm()

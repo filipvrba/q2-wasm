@@ -10,9 +10,14 @@ export default class ElmQuake2 extends HTMLElement {
     return this._newsletterId
   };
 
+  get isOnline() {
+    return this._isOnline
+  };
+
   constructor() {
     super();
-    this._newsletterId = parseInt(this.getAttribute("newsletter-id"));
+    this._newsletterId = parseInt(this.getAttribute("newsletter-id")) || null;
+    this._isOnline = this._newsletterId !== null;
     this._cAchievements = new CAchievements(this);
     this._cDatabase = new CDatabase(this);
     this.initElm()

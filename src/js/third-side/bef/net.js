@@ -34,4 +34,16 @@ function befSend(method, query, isVerbose=true, callback) {
   })
 };
 
-Net.prototype.constructor.befSend = befSend
+Net.prototype.constructor.befSend = befSend;
+
+function checkInternet(callback) {
+  let healthUrl = "https://bef.fly.dev/health";
+
+  return fetch(healthUrl, {method: "GET"}).then((response) => {
+    if (callback) return callback(true)
+  }).catch(() => {
+    if (callback) return callback(false)
+  })
+};
+
+Net.prototype.constructor.checkInternet = checkInternet

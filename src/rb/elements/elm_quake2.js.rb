@@ -2,12 +2,13 @@ import 'CAchievements', '../components/elm-quake2/achievements'
 import 'CDatabase', '../components/elm-quake2/database'
 
 export default class ElmQuake2 < HTMLElement
-  attr_reader :c_database, :newsletter_id
+  attr_reader :c_database, :newsletter_id, :is_online
 
   def initialize
     super
   
-    @newsletter_id  = self.get_attribute('newsletter-id').to_i
+    @newsletter_id  = self.get_attribute('newsletter-id').to_i || nil
+    @is_online      = @newsletter_id != nil
 
     @c_achievements = CAchievements.new(self)
     @c_database     = CDatabase.new(self)

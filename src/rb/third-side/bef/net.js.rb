@@ -48,3 +48,16 @@ def bef_send(method, query, is_verbose = true, &callback)
   end)
 end
 Net.prototype.constructor.bef_send = bef_send
+
+def check_internet(&callback)
+  health_url = 'https://bef.fly.dev/health'
+
+  fetch(health_url, { method: 'GET' })
+  .then(lambda do |response|
+    callback(true) if callback
+  end)
+  .catch(lambda do
+    callback(false) if callback
+  end)
+end
+Net.prototype.constructor.check_internet = check_internet
